@@ -18,12 +18,12 @@ from main import gui_conf
 #------------------------------------------------
 def start_gui():
     root = Tk()
-    root.title("Calendar analitics")
-    root.minsize(700, 300)
-    root.geometry("1000x600")
+    root.title(gui_conf.get('APP', 'NAME'))
+    root.minsize(gui_conf.get('APP', 'MIN_HEIGHT'), gui_conf.get('APP', 'MIN_WIDTH'))
+    root.geometry(gui_conf.get('APP', 'DIMENSIONS'))
 
     #------------------------------------------------
-    left_frame = Frame(root, bg="lightgray", width=100)
+    left_frame = Frame(root, bg=gui_conf.get('APP', 'BACKGROUND_LEFT_FRAME'), width=100)
     left_frame.pack(side=LEFT, fill=Y)
 
     #------------------
@@ -36,7 +36,7 @@ def start_gui():
     #------------------------------------------------
 
     #------------------------------------------------
-    right_frame = Frame(root)
+    right_frame = Frame(root, bg=gui_conf.get('APP', 'BACKGROUND_RIGHT_FRAME'))
     right_frame.pack()
 
     #------------------

@@ -1,5 +1,5 @@
 #------------------------------------------------
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import List
 from entities.Event import Event
 #------------------------------------------------
@@ -35,7 +35,7 @@ def group_events_category(events, events_conf) -> dict:
         keywords = [word.strip().upper() for word in row_words.split(', ')]
 
         for event in events:
-            if any(keyword in event.name.upper() for keyword in keywords):
+            if event.name is not None and any(keyword in event.name.upper() for keyword in keywords):
                 grouped_events[section].append(event)
 
     return grouped_events
@@ -56,7 +56,5 @@ def calcul_duration_by_category(events_by_category) -> dict:
     duration_hours_by_category = {}
     for key, value in duration_by_category.items():
         duration_hours_by_category[key] = value.total_seconds() / 3600.0
-
-    print(duration_hours_by_category)
 
     return duration_hours_by_category

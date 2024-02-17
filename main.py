@@ -40,4 +40,3 @@ if __name__ == '__main__':
     # print(calcul_duration_by_category(group_events_category(filtered, events_conf)))
 
     start_gui()
-    sys.exit()

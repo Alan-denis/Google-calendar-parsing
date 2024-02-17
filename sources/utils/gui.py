@@ -8,6 +8,8 @@ from tkinter import *
 
 #------------------------------------------------
 def update_pie_chart(canvas, data : dict):
+    reference_amount = data['TOTAL_TIME']
+    # do not show the TOTAL_TIME to the pie chart 
     data.pop('TOTAL_TIME')
 
     # Plot the new data

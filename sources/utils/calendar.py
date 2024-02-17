@@ -20,16 +20,10 @@ def parse_events(calendar):
     for component in calendar.walk():
 
         if component.name == "VEVENT":
-            print("EVENT ENCOUNTERED")
-
             event = Event()
 
             event.name = component.get('summary')
             event.start_date = component.get('dtstart').dt
-
-            print(event.start_date)
-            print(type(event.start_date))
-            print()
 
             if type(event.start_date) == date:
                 event.start_date = datetime.combine(event.start_date, datetime.min.time(), pytz.UTC)
@@ -45,10 +39,6 @@ def parse_events(calendar):
             event.duration = event.end_date - event.start_date
             event.location = component.get('location')
 
-            print(event.start_date)
-            print(type(event.start_date))
-            print("-----------------------")
-
             event_list.append(event)
 
     return event_list
@@ -59,25 +49,18 @@ def filter_by_date(events, start_date = None, end_date = None):
     for event in events:
 
         if start_date != None:
-            try:
-                if event.start_date < start_date:
-                    # if the event's start_date is lesser than the start_date param, do not save the event
-                    continue
-            except:
-                if event.start_date < start_date:
-                    # if the event's start_date is lesser than the start_date param, do not save the event
-                    continue
+            if event.start_date < start_date:
+                # if the event's start_date is lesser than the start_date param, do not save the event
+                continue
         
         if end_date != None:
-            try:
-                if event.end_date > end_date:
-                    # if the event's end_date is lesser than the end_date param, do not save the event
-                    continue
-            except:
-                if event.end_date > end_date:
-                    # if the event's end_date is lesser than the end_date param, do not save the event
-                    continue
+            if event.end_date > end_date:
+                # if the event's end_date is lesser than the end_date param, do not save the event
+                continue
 
         filtered_events.append(event)
 
     return filtered_events
+
+def filter_by_activity():
+    pass
