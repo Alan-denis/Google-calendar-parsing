@@ -23,7 +23,7 @@ def order_events_by_duration(events) -> tuple[List[Event], timedelta]:
     sorted_events = sorted(scoreboard_events, key=lambda x: x.duration, reverse=True)
     return sorted_events, total_time_amount
 
-def group_events_categorie(events, events_conf) -> dict:
+def group_events_category(events, events_conf) -> dict:
     grouped_events = {}
 
     for section in events_conf.sections():
@@ -40,18 +40,23 @@ def group_events_categorie(events, events_conf) -> dict:
 
     return grouped_events
 
-
-def calcul_duration_by_category(envents_by_category) -> dict:
+def calcul_duration_by_category(events_by_category) -> dict:
     duration_by_category = {}
 
-    for key in envents_by_category.keys():
-        duration_by_category.update({key : timedelta(0)})
-    duration_by_category.update({'TOTAL_TIME' : timedelta(0)})
+    for key in events_by_category.keys():
+        duration_by_category.update({key: timedelta(0)})
+    duration_by_category.update({'TOTAL_TIME': timedelta(0)})
 
-    for category in envents_by_category.keys():
-
-        for event in envents_by_category[category]:
+    for category in events_by_category.keys():
+        for event in events_by_category[category]:
             duration_by_category[category] += event.duration
             duration_by_category['TOTAL_TIME'] += event.duration
 
-    return duration_by_category
+    # Convert timedelta values to number of hours (float)
+    duration_hours_by_category = {}
+    for key, value in duration_by_category.items():
+        duration_hours_by_category[key] = value.total_seconds() / 3600.0
+
+    print(duration_hours_by_category)
+
+    return duration_hours_by_category
