@@ -23,7 +23,7 @@ def order_events_by_duration(events) -> tuple[List[Event], timedelta]:
     sorted_events = sorted(scoreboard_events, key=lambda x: x.duration, reverse=True)
     return sorted_events, total_time_amount
 
-def group_events_category(events, events_conf) -> dict:
+def group_events_by_category(events, events_conf) -> dict:
     grouped_events = {}
 
     for section in events_conf.sections():

@@ -1,23 +1,29 @@
 #------------------------------------------------
 import matplotlib.pyplot as plt
 from tkinter import *
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import pandas as pd
 #------------------------------------------------
 
 #------------------------------------------------
+from main import gui_conf
+from main import events_conf
 #------------------------------------------------
 
 #------------------------------------------------
-def update_pie_chart(canvas, data : dict):
-    reference_amount = data['TOTAL_TIME']
-    # do not show the TOTAL_TIME to the pie chart 
-    data.pop('TOTAL_TIME')
+def create_bar_chart(master, chart_name, start_row, index):
 
-    # Plot the new data
+    chart_data = pd.DataFrame({'Label': ['0'], 'Value': [0]})
+    
     fig, ax = plt.subplots()
-    ax.pie(data.values(), labels=data.keys(), autopct='%1.1f%%')
-    ax.set_title('Time Distribution')
+    chart_data.plot(kind='bar', ax=ax)
+    ax.set_title(chart_name)
+    ax.set_xlabel('Labels')
+    ax.set_ylabel('Values')
 
-    # Redraw the canvas with the updated plot
-    canvas.figure = fig
-    canvas.draw()
+    bar_chart = FigureCanvasTkAgg(fig, master=master)
+    bar_chart.draw()
+    bar_chart.get_tk_widget().grid(row=index+start_row, column=0, padx=10, pady=10, sticky="nsew")
+    
+    return ax
 #------------------------------------------------
