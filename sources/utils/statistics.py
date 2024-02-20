@@ -4,12 +4,21 @@ from typing import List
 from entities.Event import Event
 #------------------------------------------------
 
-def order_events_by_duration(events) -> tuple[List[Event], timedelta]:
+def group_duplicate_events_in_dict(data : dict):
+    filtered = {}
+
+    for category, ev_list in data.items():
+        ev, _ = group_duplicate_events_in_list(ev_list)
+        filtered.update({category: ev})
+
+    return filtered
+
+def group_duplicate_events_in_list(events : list) -> tuple[List[Event], timedelta]:
     scoreboard_events = []
     total_time_amount = timedelta(0)
 
     for event in events:
-        if event.name not in [e.name for e in scoreboard_events]:
+        if event.name.upper() not in [e.name.upper() for e in scoreboard_events]:
             scoreboard_events.append(event)
             total_time_amount += event.duration
         else:
@@ -23,7 +32,8 @@ def order_events_by_duration(events) -> tuple[List[Event], timedelta]:
     sorted_events = sorted(scoreboard_events, key=lambda x: x.duration, reverse=True)
     return sorted_events, total_time_amount
 
-def group_events_by_category(events, events_conf) -> dict:
+def group_events_by_category(events : list, events_conf) -> dict:
+    events_copy = events
     grouped_events = {}
 
     for section in events_conf.sections():
@@ -34,9 +44,9 @@ def group_events_by_category(events, events_conf) -> dict:
         row_words = events_conf.get(section, 'ALL_THAT_COUNTAINS')
         keywords = [word.strip().upper() for word in row_words.split(', ')]
 
-        for event in events:
+        for index, event in enumerate(events_copy):
             if event.name is not None and any(keyword in event.name.upper() for keyword in keywords):
-                grouped_events[section].append(event)
+                grouped_events[section].append(events_copy.pop(index))
 
     return grouped_events
 
@@ -58,3 +68,5 @@ def calcul_duration_by_category(events_by_category) -> dict:
         duration_hours_by_category[key] = value.total_seconds() / 3600.0
 
     return duration_hours_by_category
+        
+    

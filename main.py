@@ -10,6 +10,7 @@ from sources.utils.config import *
 from sources.utils.statistics import *
 
 from view.body import *
+# from view.test import *
 #------------------------------------------------
 
 #------------------------------------------------
@@ -35,7 +36,7 @@ event_list = parse_events(calendar)
 if __name__ == '__main__':
     
     # filtered = filter_by_date(event_list, datetime(2024, 2, 12, 6, 15, tzinfo=pytz.UTC))
-    # ladderboard, total_time_amount = order_events_by_duration(filtered)
+    # ladderboard, total_time_amount = group_duplicate_events(filtered)
 
     # print(calcul_duration_by_category(group_events_by_category(filtered, events_conf)))
 
