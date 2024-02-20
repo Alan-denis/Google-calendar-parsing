@@ -7,8 +7,7 @@ import math
 #------------------------------------------------
 
 #------------------------------------------------
-from main import gui_conf
-from main import events_conf
+from main import gui_conf as gf
 #------------------------------------------------
 
 #------------------------------------------------
@@ -39,7 +38,7 @@ def create_bar_charts(master, row: int, column: int, chart_names: list, figsize=
 
     for ax, name in zip(axs.flat, chart_names):
         if name:
-            chart_data.plot(kind='bar', ax=ax, color=gui_conf.get('BAR_CHARTS', 'BARS_COLOR'))
+            chart_data.plot(kind='bar', ax=ax, color=gf.get('BAR_CHARTS', 'BARS_COLOR'))
             ax.set_title(name)
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)

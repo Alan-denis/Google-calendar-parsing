@@ -8,9 +8,9 @@ from sources.utils.calendar import *
 from sources.utils.gui import *
 from sources.utils.statistics import *
 
-from main import event_list
-from main import events_conf
-from main import gui_conf
+from main import event_list as el
+from main import events_conf as ec
+from main import gui_conf as gc
 #------------------------------------------------
 
 #------------------------------------------------
@@ -28,10 +28,11 @@ def filter_date_on_leave(event, start_date, end_date, pie_chart_ax, bar_charts_l
     except:
         date_obj_end = None
     
-    filtered = filter_by_date(event_list, date_obj_start, date_obj_end)
-    grouped = group_events_by_category(filtered, events_conf)
+    filtered = filter_by_date(el, date_obj_start, date_obj_end)
 
+    grouped = group_events_by_category(filtered, ec)
     no_duplicates = group_duplicate_events_in_dict(grouped)
+
     duration_by_category = calcul_duration_by_category(no_duplicates)
 
     update_pie_chart(pie_chart_ax, duration_by_category)
@@ -64,22 +65,22 @@ def update_bar_charts(bar_chart_ax_list : list, data : dict):
                 event_df = pd.DataFrame(event_data)
                 event_df = event_df.sort_values(by=y_label, ascending=False)
 
-                event_df.plot(kind='bar', x=x_label, y=y_label, ax=ax_chart, color=gui_conf.get('BAR_CHARTS', 'BARS_COLOR'))
+                event_df.plot(kind='bar', x=x_label, y=y_label, ax=ax_chart, color=gc.get('BAR_CHARTS', 'BARS_COLOR'))
             except:
                 print("No data in the", title, "chart")
 
     # Refresh the canvas to reflect the changes
     for ax in bar_chart_ax_list:
-        ax.grid(axis='y', linestyle=gui_conf.get('BAR_CHARTS', 'VERTICAL_LIGNES_STYLE'), 
-                linewidth=gui_conf.get('BAR_CHARTS', 'VERTICAL_LIGNES_WIDTH'), 
-                color=gui_conf.get('BAR_CHARTS', 'VERTICAL_LIGNES_COLOR'))
+        ax.grid(axis='y', linestyle=gc.get('BAR_CHARTS', 'VERTICAL_LIGNES_STYLE'), 
+                linewidth=gc.get('BAR_CHARTS', 'VERTICAL_LIGNES_WIDTH'), 
+                color=gc.get('BAR_CHARTS', 'VERTICAL_LIGNES_COLOR'))
         ax.figure.canvas.draw()
 
 def update_pie_chart(ax, data : dict):
     # do not show the TOTAL_TIME to the pie chart 
     reference_amount = data.pop('TOTAL_TIME')
     title = ax.get_title()
-    ax.cla()
+    ax.clear()
 
     ax.pie(data.values(), labels=data.keys(), autopct='%1.1f%%')
     ax.set_title(title)

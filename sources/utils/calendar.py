@@ -43,7 +43,7 @@ def parse_events(calendar):
 
     return event_list
 
-def filter_by_date(events, start_date = None, end_date = None):
+def filter_by_date(events, start_date = None, end_date = None) -> list[Event]:
     filtered_events = []
 
     for event in events:
