@@ -1,9 +1,6 @@
 #------------------------------------------------
 from tkinter import *
 from tkinter import ttk
-import sys
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 #------------------------------------------------
 
 #------------------------------------------------
@@ -13,6 +10,10 @@ from sources.utils.config import *
 from main import gui_conf as gc
 from main import events_conf as ec
 #------------------------------------------------
+
+def only_show(Frame):
+    Frame.grid(row=0, column=0, sticky="nsew", padx=(0, 10), pady=10)
+    right_frame.grid_forget()
 
 #------------------------------------------------
 def start_gui():
@@ -30,7 +31,7 @@ def start_gui():
     button = Button(left_frame, text="Statistics", command=None, width=30)
     button.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
 
-    button = Button(left_frame, text="View 2", command=None, width=30)
+    button = Button(left_frame, text="View 2", width=30, command=lambda : hide_statistics)
     button.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
 
     # Right Frame
@@ -57,7 +58,7 @@ def start_gui():
     start_date_entry = Entry(filter_frame)
     start_date_entry.grid(row=0, column=2, padx=10, pady=10)
     start_date_entry.insert(0, "YYYY-MM-DD")
-    start_date_entry.bind("<FocusOut>", lambda event: filter_date_on_leave(event, start_date_entry.get(), end_date_entry.get(), pie_chart_ax, bar_chart_ax_list))
+    start_date_entry.bind("<FocusOut>", lambda event: filter_date_on_leave(event, start_date_entry.get(), end_date_entry.get(), pie_chart, bar_chart_ax_list))
 
     # Label for end date
     end_date_label = Label(filter_frame, text="End Date:")
@@ -67,7 +68,7 @@ def start_gui():
     end_date_entry = Entry(filter_frame)
     end_date_entry.grid(row=0, column=4, padx=10, pady=10)
     end_date_entry.insert(0, "YYYY-MM-DD")
-    end_date_entry.bind("<FocusOut>", lambda event: filter_date_on_leave(event, start_date_entry.get(), end_date_entry.get(), pie_chart_ax, bar_chart_ax_list))
+    end_date_entry.bind("<FocusOut>", lambda event: filter_date_on_leave(event, start_date_entry.get(), end_date_entry.get(), pie_chart, bar_chart_ax_list))
 
     # Canvas and scrollbar
     canvas = Canvas(right_frame, bg='pink', height=1000)
@@ -85,7 +86,7 @@ def start_gui():
     canvas.create_window((0, 0), window=inner_frame, anchor="center")
 
     # Place pie chart
-    pie_chart_ax = create_pie_chart(inner_frame, gc.get('PIE_CHART_BY_CATEGORY', 'NAME'), 0, 0)
+    pie_chart = create_pie_chart(inner_frame, gc.get('PIE_CHART_BY_CATEGORY', 'NAME'), 0, 0)
     
     # Place bar charts
     bar_chart_ax_list = create_bar_charts(inner_frame, 1, 0, ec.sections())

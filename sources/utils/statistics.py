@@ -33,7 +33,6 @@ def group_duplicate_events_in_list(events : list) -> tuple[List[Event], timedelt
     return sorted_events, total_time_amount
 
 def group_events_by_category(events : list, events_conf) -> dict:
-    events_copy = events
     grouped_events = {}
 
     for section in events_conf.sections():
@@ -44,9 +43,9 @@ def group_events_by_category(events : list, events_conf) -> dict:
         row_words = events_conf.get(section, 'ALL_THAT_COUNTAINS')
         keywords = [word.strip().upper() for word in row_words.split(', ')]
 
-        for index, event in enumerate(events_copy):
+        for index, event in enumerate(events):
             if event.name is not None and any(keyword in event.name.upper() for keyword in keywords):
-                grouped_events[section].append(events_copy.pop(index))
+                grouped_events[section].append(events.pop(index))
 
     return grouped_events
 
@@ -68,5 +67,5 @@ def calcul_duration_by_category(events_by_category) -> dict:
         duration_hours_by_category[key] = value.total_seconds() / 3600.0
 
     return duration_hours_by_category
-        
-    
+
+

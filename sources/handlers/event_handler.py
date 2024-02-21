@@ -14,7 +14,7 @@ from main import gui_conf as gc
 #------------------------------------------------
 
 #------------------------------------------------
-def filter_date_on_leave(event, start_date, end_date, pie_chart_ax, bar_charts_list):
+def filter_date_on_leave(event, start_date, end_date, pie_chart, bar_charts_list):
 
     try:
         parsed_date = datetime.strptime(start_date, '%Y-%m-%d')
@@ -35,7 +35,7 @@ def filter_date_on_leave(event, start_date, end_date, pie_chart_ax, bar_charts_l
 
     duration_by_category = calcul_duration_by_category(no_duplicates)
 
-    update_pie_chart(pie_chart_ax, duration_by_category)
+    update_pie_chart(pie_chart, duration_by_category)
     update_bar_charts(bar_charts_list, no_duplicates)
 
 def activity_filter(event, activity):
@@ -76,15 +76,18 @@ def update_bar_charts(bar_chart_ax_list : list, data : dict):
                 color=gc.get('BAR_CHARTS', 'VERTICAL_LIGNES_COLOR'))
         ax.figure.canvas.draw()
 
-def update_pie_chart(ax, data : dict):
+def update_pie_chart(pie_chart, data : dict):
     # do not show the TOTAL_TIME to the pie chart 
     reference_amount = data.pop('TOTAL_TIME')
-    title = ax.get_title()
-    ax.clear()
 
+    fig, ax = pie_chart.figure, pie_chart.figure.axes[0]
+    title = ax.get_title()
+
+    ax.clear()
     ax.pie(data.values(), labels=data.keys(), autopct='%1.1f%%')
     ax.set_title(title)
-    ax.figure.canvas.draw()
+    
+    pie_chart.draw()
 
 def on_configure(event, canvas):
     canvas.configure(scrollregion=canvas.bbox('all'))
