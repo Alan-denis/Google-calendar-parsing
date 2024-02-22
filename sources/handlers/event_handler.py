@@ -14,7 +14,7 @@ from main import gui_conf as gc
 #------------------------------------------------
 
 #------------------------------------------------
-def filter_date_on_leave(event, start_date, end_date, pie_chart, bar_charts_list):
+def filter_date_on_leave(event, start_date, end_date = date.today(), pie_chart, bar_charts_list):
 
     try:
         parsed_date = datetime.strptime(start_date, '%Y-%m-%d')
