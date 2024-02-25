@@ -11,42 +11,39 @@ from main import gui_conf as gf
 #------------------------------------------------
 
 #------------------------------------------------
-def create_pie_chart(master, chart_name, row, column):
+class GuiUtils:
 
-    fig, ax = plt.subplots()
-    ax.set_title(chart_name)
+    def create_pie_chart(master, chart_name, row, column):
 
-    pie_chart = FigureCanvasTkAgg(fig, master=master)
-    pie_chart.draw()
-    pie_chart.get_tk_widget().grid(row=row, column=column, sticky="nsew")
-    return pie_chart
+        fig, ax = plt.subplots()
+        ax.set_title(chart_name)
 
-def create_bar_charts(master, row: int, column: int, chart_names: list, figsize=(10, 8)) -> list:
-    num_charts = len(chart_names)
-    num_cols = 2  # Fixed number of columns for the subplot grid
-    num_rows = math.ceil(num_charts / num_cols)  # Calculate the number of rows needed for the subplot grid
+        pie_chart = FigureCanvasTkAgg(fig, master=master)
+        pie_chart.draw()
+        pie_chart.get_tk_widget().grid(row=row, column=column, sticky="nsew")
+        return pie_chart
 
-    x_label = "Activities"
-    y_label = "Hours"
+    def create_bar_charts(master, row: int, column: int, chart_names: list, figsize=(10, 8)) -> list:
+        num_charts = len(chart_names)
+        num_cols = 2  # Fixed number of columns for the subplot grid
+        num_rows = math.ceil(num_charts / num_cols)  # Calculate the number of rows needed for the subplot grid
 
-    fig, axs = plt.subplots(nrows=num_rows, ncols=num_cols, figsize=figsize)
-    fig.tight_layout(pad=6)
-    chart_data = pd.DataFrame({x_label : ['0'], y_label: [0]})
+        x_label = "Activities"
+        y_label = "Hours"
 
-    bar_chart_ax_list = []
+        fig, axs = plt.subplots(nrows=num_rows, ncols=num_cols, figsize=figsize)
+        fig.tight_layout(pad=6)
 
-    for ax, name in zip(axs.flat, chart_names):
-        if name:
-            ax.set_title(name)
-            ax.set_xlabel(x_label)
-            ax.set_ylabel(y_label)
+        for ax, name in zip(axs.flat, chart_names):
+            if name:
+                ax.set_title(name)
+                ax.set_xlabel(x_label)
+                ax.set_ylabel(y_label)
 
-            bar_chart_ax_list.append(ax)
+        canvas = FigureCanvasTkAgg(fig, master=master)
+        canvas.draw()
+        canvas.get_tk_widget().grid(row=row, column=column, sticky="nsew")
 
-    bar_chart = FigureCanvasTkAgg(fig, master=master)
-    bar_chart.draw()
-    bar_chart.get_tk_widget().grid(row=row, column=column, sticky="nsew")
-
-    return bar_chart_ax_list
-
-#------------------------------------------------
+        return canvas
+    
+    
