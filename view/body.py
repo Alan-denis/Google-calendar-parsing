@@ -22,7 +22,7 @@ def only_show(root_frame : Tk, menu_frame : Frame, frame_to_show : Frame):
     frame_to_show.grid(row=0, column=1, sticky="nsew", padx=(0, 10), pady=10)
 
 # Function to populate the listbox with configurations
-def populate_configurations_listbox(entry_box : Text, selected_conf : str):
+def populate_configurations_text(entry_box : Text, selected_conf : str):
     conf_file_path = os.path.join(conf_path, 'events' + '.ini')
 
     conf = ConfigParser()
@@ -30,11 +30,6 @@ def populate_configurations_listbox(entry_box : Text, selected_conf : str):
 
     entry_box.delete(0.0, END)
     entry_box.insert(0.0, Config.from_ini_to_json(conf_file_path))
-
-# Function to handle adding a configuration
-def add_configuration():
-    # Add the section name and keys to the ini file
-    pass  # You need to implement this function
 
 def select_csv_file(csv_entry : Entry):
     file_path = filedialog.askopenfilename(filetypes=[("ICS files", "*.ics")])
@@ -45,8 +40,10 @@ def select_csv_file(csv_entry : Entry):
 
         csv_entry.insert(END, config_obj.calendar_ics_file_path)
 
-# Function to handle removing a configuration
-def remove_configuration():
+def save_configuration(conf_string):
+    print(Config.from_json_to_ini(conf_string, "E:\OneDrive - Efrei\Grind\Projets\Google-calendar-parsing\\output.ini"))
+
+def cancel_configuration():
     pass
 
 def find_ini_files(directory):
@@ -93,7 +90,7 @@ def start_gui():
     csv_label = Label(csv_frame, text="Input file:")
     csv_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
 
-    csv_path_entry = Entry(csv_frame, width=200)
+    csv_path_entry = Entry(csv_frame, width=100)
     csv_path_entry.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
     csv_path_entry.insert(0, config_obj.calendar_ics_file_path)
 
@@ -101,26 +98,36 @@ def start_gui():
     select_csv_button = Button(csv_frame, text="...", width=3, command=lambda : select_csv_file(csv_path_entry))
     select_csv_button.grid(row=0, column=2, padx=(0, 10), pady=5, sticky="e")
     #-----------------------------------------
+    
+    #-----------------------------------------
+    f = Frame(conf_frame)
+    f.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
 
-    populate_button = Button(conf_frame, text="See Configurations", width=30, command=lambda : populate_configurations_listbox(configurations_listbox, choice_filter.get()))
-    populate_button.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+    populate_button = Button(f, text="See Configurations", width=30, command=lambda : populate_configurations_text(configurations_text, choice_filter.get()))
+    populate_button.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
 
     ini_files = find_ini_files(conf_path)
-    choice_filter = ttk.Combobox(conf_frame, width=15, values=ini_files)
+    choice_filter = ttk.Combobox(f, width=15, values=ini_files)
     choice_filter.set(ini_files[0])
-    choice_filter.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
+    choice_filter.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
+    #-----------------------------------------
 
     # Listbox to display configurations
-    configurations_listbox = Text(conf_frame, state=NORMAL)
-    configurations_listbox.grid(row=2, column=0, padx=10, pady=10, sticky="nsew")
+    configurations_text = Text(conf_frame, state=NORMAL)
+    configurations_text.grid(row=2, column=0, padx=10, pady=10, sticky="nsew")
+    
+    #-----------------------------------------
+    f = Frame(conf_frame)
+    f.grid(row=3, column=0, padx=10, pady=10, sticky="nswe")
 
     # Button to add a configuration
-    add_button = Button(conf_frame, text="Add Configuration", width=30, command=add_configuration)
-    add_button.grid(row=3, column=0, padx=10, pady=10, sticky="ew")
+    save_button = Button(f, text="Save configuration", width=30, bg='green', command=lambda : save_configuration(configurations_text.get(0.0, END)))
+    save_button.grid(row=0, column=0, padx=10, pady=10, sticky="nswe")
 
     # Button to remove a configuration
-    remove_button = Button(conf_frame, text="Remove Configuration", width=30, command=remove_configuration)
-    remove_button.grid(row=4, column=0, padx=10, pady=10, sticky="ew")
+    cancel_button = Button(f, text="Cancel modification", width=30, command=cancel_configuration, bg='red')
+    cancel_button.grid(row=0, column=1, padx=10, pady=10, sticky="nswe")
+    #-----------------------------------------
     #-------------------------------------------------------------------------
 
     # Right Frame

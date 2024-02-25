@@ -23,26 +23,40 @@ class Config:
         config.read(ini_file_path)
 
         config_dict = {}
+
+        config_dict["DEFAULT"] = dict(config.items('DEFAULT'))
+
         for section in config.sections():
-            config_dict[section] = dict(config.items(section))
+            tmp_dict = {}
+
+            for key in config[section].keys():
+                tmp_dict.update({key: config.get(section, key)})
+            
+            config_dict[section] = tmp_dict
 
         # Convert the dictionary to JSON format
         json_data = json.dumps(config_dict)
 
         return json_data
 
-    def from_json_to_ini(json_obj, ini_file_path):
-        json_data = json_obj
-
-        config_dict = json.loads(json_data)
-
+    def from_json_to_ini(json_obj, output_ini_file_path):
+        config_dict = json.loads(json_obj)
         config = ConfigParser()
+        
+        default_options = config_dict.pop('DEFAULT', None)
+        if default_options:
+            with open(output_ini_file_path, 'w') as config_file:
+                config_file.write('[DEFAULT]\n')
+                for option, value in default_options.items():
+                    config_file.write(f"{option.upper()} = {value}\n")
+                config_file.write('\n')
 
-        # Write dictionary data to ConfigParser
         for section, options in config_dict.items():
             config.add_section(section)
-            for option, value in options.items():
-                config.set(section, option, str(value))
 
-        with open(ini_file_path, 'w') as config_file:
+            for option, value in options.items():
+                if option not in default_options:
+                    config.set(section, option.upper(), str(value))
+
+        with open(output_ini_file_path, 'a') as config_file:
             config.write(config_file)
