@@ -48,7 +48,7 @@ class Config:
             with open(output_ini_file_path, 'w') as config_file:
                 config_file.write('[DEFAULT]\n')
                 for option, value in default_options.items():
-                    config_file.write(f"{option.upper()} = {value}\n")
+                    config_file.write(f"{option} = {value}\n")
                 config_file.write('\n')
 
         for section, options in config_dict.items():
@@ -56,7 +56,7 @@ class Config:
 
             for option, value in options.items():
                 if option not in default_options:
-                    config.set(section, option.upper(), str(value))
+                    config.set(section, option, str(value))
 
         with open(output_ini_file_path, 'a') as config_file:
             config.write(config_file)

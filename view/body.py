@@ -40,8 +40,8 @@ def select_csv_file(csv_entry : Entry):
 
         csv_entry.insert(END, config_obj.calendar_ics_file_path)
 
-def save_configuration(conf_string):
-    print(Config.from_json_to_ini(conf_string, "E:\OneDrive - Efrei\Grind\Projets\Google-calendar-parsing\\output.ini"))
+def save_configuration(json_conf, selected_conf):
+    print(Config.from_json_to_ini(json_conf, os.path.join(conf_path, selected_conf + '.ini')))
 
 def cancel_configuration():
     pass
@@ -103,11 +103,12 @@ def start_gui():
     f = Frame(conf_frame)
     f.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
 
-    populate_button = Button(f, text="See Configurations", width=30, command=lambda : populate_configurations_text(configurations_text, choice_filter.get()))
+    populate_button = Button(f, text="See Configurations", width=30, command=lambda : populate_configurations_text(configurations_text, conf_selection.get()))
     populate_button.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
 
     ini_files = find_ini_files(conf_path)
-    choice_filter = ttk.Combobox(f, width=15, values=ini_files)
+    conf_selection = StringVar()
+    choice_filter = ttk.Combobox(f, width=15, values=ini_files, textvariable=conf_selection)
     choice_filter.set(ini_files[0])
     choice_filter.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
     #-----------------------------------------
@@ -121,7 +122,7 @@ def start_gui():
     f.grid(row=3, column=0, padx=10, pady=10, sticky="nswe")
 
     # Button to add a configuration
-    save_button = Button(f, text="Save configuration", width=30, bg='green', command=lambda : save_configuration(configurations_text.get(0.0, END)))
+    save_button = Button(f, text="Save configuration", width=30, bg='green', command=lambda : save_configuration(configurations_text.get(0.0, END), conf_selection.get()))
     save_button.grid(row=0, column=0, padx=10, pady=10, sticky="nswe")
 
     # Button to remove a configuration
