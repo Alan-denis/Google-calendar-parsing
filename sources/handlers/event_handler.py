@@ -10,102 +10,120 @@ from sources.utils.calendar import *
 from sources.utils.gui import *
 from sources.utils.statistics import *
 
-from main import event_list as el
 from main import events_conf as ec
 from main import gui_conf as gc
+from main import config_obj
 #------------------------------------------------
 
 #------------------------------------------------
-def filter_date_on_leave(event, pie_chart, bar_chart_canvas, start_date: str, end_date : str, filter_start : bool, filter_end : bool):
-    if filter_start:
-        try:
-            parsed_date = datetime.strptime(start_date, '%d-%m-%Y')
-            date_obj_start = datetime.combine(parsed_date, datetime.min.time(), tzinfo=pytz.UTC)
-        except:
-            messagebox.showinfo("Date format no respected", "The date format desn't respect the 'dd-mm-yyyy' format, therefore no date is used as a reference.")
-            date_obj_start = None
-    else:
-        date_obj_start = None
+class Handler:
+    class Calendar:
+        def filter_date_on_leave(e, pie_chart, bar_chart_canvas, start_date: str, end_date : str, filter_start : bool, filter_end : bool):
 
-    if filter_end:
-        try:
-            parsed_date = datetime.strptime(end_date, '%d-%m-%Y')
-            date_obj_end = datetime.combine(parsed_date, datetime.max.time(), tzinfo=pytz.UTC)
-        except:
-            messagebox.showinfo("Date format no respected", "The date format desn't respect the 'dd-mm-yyyy' format, therefore the today's end date is used as a reference.")
-            current_time = datetime.max.time()
-            date_obj_end = datetime.combine(date.today(), time(current_time.hour, current_time.minute, current_time.second), tzinfo=pytz.UTC)
-    else:
-        date_obj_end = None
+            # calendar = Calendar.read_calendar(config_obj.calendar_ics_file_path)
+            # event_list = Calendar.parse_events(calendar)
 
-    filtered = Calendar.filter_by_date(el, date_obj_start, date_obj_end)
-    # filtered = remove_unamed_activity(filtered)
+            if filter_start:
+                try:
+                    parsed_date = datetime.strptime(start_date, '%d-%m-%Y')
+                    date_obj_start = datetime.combine(parsed_date, datetime.min.time(), tzinfo=pytz.UTC)
+                except:
+                    messagebox.showinfo("Date format no respected", "The date format desn't respect the 'dd-mm-yyyy' format, therefore no date is used as a reference.")
+                    date_obj_start = None
+            else:
+                date_obj_start = None
 
-    no_duplicates, _ = Statistics.group_duplicate_events_in_list(filtered)
-    grouped = Statistics.group_events_by_category(no_duplicates, ec)
+            if filter_end:
+                try:
+                    parsed_date = datetime.strptime(end_date, '%d-%m-%Y')
+                    date_obj_end = datetime.combine(parsed_date, datetime.max.time(), tzinfo=pytz.UTC)
+                except:
+                    messagebox.showinfo("Date format no respected", "The date format desn't respect the 'dd-mm-yyyy' format, therefore the today's end date is used as a reference.")
+                    current_time = datetime.max.time()
+                    date_obj_end = datetime.combine(date.today(), time(current_time.hour, current_time.minute, current_time.second), tzinfo=pytz.UTC)
+            else:
+                date_obj_end = None
 
-    duration_by_category = Statistics.calcul_duration_by_category(grouped)
+            # print(date_obj_start)
+            # print(date_obj_end)
 
-    update_pie_chart(pie_chart, duration_by_category)
-    update_bar_charts(bar_chart_canvas, grouped)
+            filtered = Calendar.filter_by_date(config_obj.event_list.copy(), date_obj_start, date_obj_end)
+            filtered = Statistics.remove_unamed_activity(filtered)
 
-def activity_filter(event, activity):
-    print("ACTIVITY :",activity)
+            # no_duplicates, _ = Statistics.group_duplicate_events_in_list(filtered)
+            grouped = Statistics.group_events_by_category(filtered, ec)
+            
+            for category, events in grouped.items():
+                print("CATEGORY", category)
+                for event in events:
+                    print(event.name)
 
-def update_bar_charts(bar_chart_canvas : FigureCanvasTkAgg, data : dict):
-    x_label = "Label"
-    y_label = "Value"
+            duration_by_category = Statistics.calcul_duration_by_category(grouped)
 
-    axes_list = bar_chart_canvas.figure.axes
+            update_pie_chart(pie_chart, duration_by_category)
+            update_bar_charts(bar_chart_canvas, grouped)
 
-    for category, events in data.items():
-        ax_chart = None
-        for ax in axes_list:
-            if category == ax.get_title():
-                ax_chart = ax
-                break
+        def activity_filter(event, activity):
+            print("ACTIVITY :",activity)
 
-        if ax_chart is not None:
-            title = ax_chart.get_title()
-            ax_chart.clear()
-            ax_chart.set_title(title)
+        def update_bar_charts(bar_chart_canvas : FigureCanvasTkAgg, data : dict):
+            x_label = "Label"
+            y_label = "Value"
 
-            event_data = []
-            for event in events:
-                event_data.append({x_label: event.name, y_label: event.duration.total_seconds() / 3600})
+            axes_list = bar_chart_canvas.figure.axes
+
+            for category, events in data.items():
+                ax_chart = None
+                for ax in axes_list:
+                    if category == ax.get_title():
+                        ax_chart = ax
+                        break
+
+                if ax_chart is not None:
+                    title = ax_chart.get_title()
+                    ax_chart.clear()
+                    ax_chart.set_title(title)
+
+                    event_data = []
+                    for event in events:
+                        event_data.append({x_label: event.name, y_label: event.duration.total_seconds() / 3600})
+
+                    try:
+                        event_df = pd.DataFrame(event_data)
+                        event_df = event_df.sort_values(by=y_label, ascending=False)
+
+                        event_df.plot(kind='bar', x=x_label, y=y_label, ax=ax_chart, color=gc.get('BAR_CHARTS', 'BARS_COLOR'))
+                    except:
+                        print("No data in the", title, "chart")
+
+            # Refresh the canvas to reflect the changes
+            for ax in axes_list:
+                ax.grid(axis='y', linestyle=gc.get('BAR_CHARTS', 'VERTICAL_LIGNES_STYLE'), 
+                        linewidth=gc.get('BAR_CHARTS', 'VERTICAL_LIGNES_WIDTH'), 
+                        color=gc.get('BAR_CHARTS', 'VERTICAL_LIGNES_COLOR'))
+
+            bar_chart_canvas.draw()
+
+        def update_pie_chart(pie_chart, data : dict):
+            # do not show the TOTAL_TIME to the pie chart 
+            reference_amount = data.pop('TOTAL_TIME')
 
             try:
-                event_df = pd.DataFrame(event_data)
-                event_df = event_df.sort_values(by=y_label, ascending=False)
+                ax = pie_chart.figure.axes[0]
+                title = ax.get_title()
+                ax.clear()
+                ax.set_title(title)
 
-                event_df.plot(kind='bar', x=x_label, y=y_label, ax=ax_chart, color=gc.get('BAR_CHARTS', 'BARS_COLOR'))
+                ax.pie(data.values(), labels=data.keys(), autopct='%1.1f%%')
             except:
-                print("No data in the", title, "chart")
+                messagebox.showerror("Impossible to plot data", "There is no data to plot")
+            finally:
+                pie_chart.draw()
 
-    # Refresh the canvas to reflect the changes
-    for ax in axes_list:
-        ax.grid(axis='y', linestyle=gc.get('BAR_CHARTS', 'VERTICAL_LIGNES_STYLE'), 
-                linewidth=gc.get('BAR_CHARTS', 'VERTICAL_LIGNES_WIDTH'), 
-                color=gc.get('BAR_CHARTS', 'VERTICAL_LIGNES_COLOR'))
+        def on_configure(event, canvas):
+            canvas.configure(scrollregion=canvas.bbox("all"))
 
-    bar_chart_canvas.draw()
-
-def update_pie_chart(pie_chart, data : dict):
-    # do not show the TOTAL_TIME to the pie chart 
-    reference_amount = data.pop('TOTAL_TIME')
-
-    try:
-        ax = pie_chart.figure.axes[0]
-        title = ax.get_title()
-        ax.clear()
-        ax.set_title(title)
-
-        ax.pie(data.values(), labels=data.keys(), autopct='%1.1f%%')
-    except:
-        messagebox.showerror("Impossible to plot data", "There is no data to plot")
-    finally:
-        pie_chart.draw()
-
-def on_configure(event, canvas):
-    canvas.configure(scrollregion=canvas.bbox('all'))
+    class Carnivore:
+        def update_metrics():
+            pass
 #------------------------------------------------

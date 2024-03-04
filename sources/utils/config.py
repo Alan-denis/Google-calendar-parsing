@@ -4,9 +4,18 @@ import json
 import os
 from typing import List
 #------------------------------------------------
+
+#------------------------------------------------
+from entities.Event import Event
+#------------------------------------------------
+
 class Config:
     calendar_ics_file_path = ""
+    carnivore_payment_history_path = ""
 
+    event_list : Event = []
+    carnivore_payment_history = []
+    
     def read_configuration_files(path) -> List[ConfigParser]:
         conf_file_list = []
 

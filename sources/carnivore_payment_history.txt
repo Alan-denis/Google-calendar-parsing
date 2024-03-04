@@ -1,0 +1,6 @@
+04/03/2024;Fromage compte;200;3.50
+04/03/2024;Boeuf hacher;450;4.95
+04/03/2024;Fromage emmental;190;2.5
+04/03/2024;Tranches boeuf sec;80;3.67
+04/03/2024;Steaks boeuf;400;8.99
+04/03/2024;Oeufs;10;3.79

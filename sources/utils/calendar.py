@@ -8,7 +8,6 @@ import pytz
 from entities.Event import Event
 #------------------------------------------------
 class Calendar:
-
     def read_calendar(ics_file):
         try:
             with open(ics_file, 'rb') as f:

@@ -6,6 +6,7 @@ from tkinter import ttk, filedialog
 #------------------------------------------------
 from sources.handlers.event_handler import *
 from sources.utils.config import *
+from sources.utils.carnivore import *
 
 from main import gui_conf as gc
 from main import events_conf as ec
@@ -54,12 +55,16 @@ def find_ini_files(directory):
                 ini_files.append(file[:-4])
     return ini_files
 
+def on_canvas_scroll(event, canvas):
+    canvas.yview_scroll(-1 * int((event.delta / 120)), "units")
+
 #------------------------------------------------
 def start_gui():
     root = Tk()
     root.title(gc.get('APP', 'NAME'))
     root.minsize(gc.get('APP', 'MIN_HEIGHT'), gc.get('APP', 'MIN_WIDTH'))
     root.geometry(gc.get('APP', 'DIMENSIONS'))
+    root.rowconfigure(1, weight=1)
     root.columnconfigure(1, weight=1)
 
     # Menu
@@ -71,8 +76,12 @@ def start_gui():
     button = Button(menu_frame, text="Statistics", width=30,  command=lambda : only_show(root, menu_frame, right_frame))
     button.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
 
-    button = Button(menu_frame, text="Configuration", width=30, command=lambda : only_show(root, menu_frame, conf_frame))
+    # Buttons in Menu
+    button = Button(menu_frame, text="Carnivore diet", width=30,  command=lambda : only_show(root, menu_frame, carnivore_frame))
     button.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+
+    button = Button(menu_frame, text="Configuration", width=30, command=lambda : only_show(root, menu_frame, conf_frame))
+    button.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
     #-------------------------------------------------------------------------
 
     #Configuration
@@ -131,12 +140,17 @@ def start_gui():
     #-----------------------------------------
     #-------------------------------------------------------------------------
 
+    # Carnivore diet
+    #-------------------------------------------------------------------------
+    carnivore_frame = Frame(root, bg=gc.get('APP', 'BACKGROUND_CARNIVORE_FRAME'))
+    #-------------------------------------------------------------------------
+
     # Right Frame
     #-------------------------------------------------------------------------
     right_frame = Frame(root, bg=gc.get('APP', 'BACKGROUND_RIGHT_FRAME'))
     right_frame.grid(row=0, column=1, sticky="nsew", padx=(0, 10), pady=10)
-    right_frame.columnconfigure(0, weight=1)
-    right_frame.rowconfigure(1, weight=1)
+    right_frame.rowconfigure(1, weight=1)  # Row containing the Canvas
+    right_frame.columnconfigure(0, weight=1)  # Assuming column 0 is the column containing the Canvas
 
     # Filter Frame
     filter_frame = Frame(right_frame)  # Set background color for visibility
@@ -146,7 +160,7 @@ def start_gui():
     activities = gc.get('FILTER_BAR', 'FILTER_CHOICES').split(', ')
     choice_filter = ttk.Combobox(filter_frame, width=15, values=activities)
     choice_filter.grid(row=0, column=0, padx=10, pady=10)
-    choice_filter.bind('<<ComboboxSelected>>', lambda event: activity_filter(event, choice_filter.get()))
+    choice_filter.bind('<<ComboboxSelected>>', lambda event: Handler.activity_filter(event, choice_filter.get()))
     
     # Checkbox for start date filter
     start_date_filter_var = BooleanVar()
@@ -162,7 +176,7 @@ def start_gui():
     start_date_entry.config(validatecommand=(root.register(lambda new_value: len(new_value) <= 10), "%P"))
     start_date_entry.grid(row=0, column=3, padx=10, pady=10)
     start_date_entry.insert(0, "DD-MM-YYY")
-    start_date_entry.bind("<FocusOut>", lambda event: filter_date_on_leave(event, pie_chart, bar_chart_canvas, start_date_entry.get(), end_date_entry.get(), start_date_filter_var.get(), end_date_filter_var.get()))
+    start_date_entry.bind("<FocusOut>", lambda event: Handler.filter_date_on_leave(event, pie_chart, bar_chart_canvas, start_date_entry.get(), end_date_entry.get(), start_date_filter_var.get(), end_date_filter_var.get()))
 
     # Checkbox forstart date filter
     end_date_filter_var = BooleanVar()
@@ -178,27 +192,28 @@ def start_gui():
     start_date_entry.config(validatecommand=(root.register(lambda new_value: len(new_value) <= 10), "%P"))
     end_date_entry.grid(row=0, column=6, padx=10, pady=10)
     end_date_entry.insert(0, "DD-MM-YYY")
-    end_date_entry.bind("<FocusOut>", lambda event: filter_date_on_leave(event, pie_chart, bar_chart_canvas, start_date_entry.get(), end_date_entry.get(), start_date_filter_var.get(), end_date_filter_var.get())
-    )
+    end_date_entry.bind("<FocusOut>", lambda event: Handler.filter_date_on_leave(event, pie_chart, bar_chart_canvas, start_date_entry.get(), end_date_entry.get(), start_date_filter_var.get(), end_date_filter_var.get()))
 
     # Canvas andscrollbar
-    canvas = Canvas(right_frame)
-    canvas.grid(row=1, column=0, columnspan=3, sticky="nsew")
+    canvas = Canvas(right_frame, width=500, height=1000)
+    canvas.grid(row=1, column=0, sticky="nsew")
     canvas.columnconfigure(0, weight=1)
+    canvas.bind_all("<MouseWheel>", lambda e : on_canvas_scroll(e, canvas))
 
-    scrollbar = Scrollbar(right_frame, orient='vertical', command=canvas.yview, width=30)
-    scrollbar.grid(row=0, column=1, rowspan=3, sticky='ns')
-    canvas.configure(yscrollcommand=scrollbar.set)
-    # canvas.bind('<Configure>', lambda event : on_configure(event, canvas))
+    statistics_frame = Frame(canvas)
 
     # Place pie chart
-    pie_chart = GuiUtils.create_pie_chart(canvas, gc.get('PIE_CHART_BY_CATEGORY', 'NAME'), 0, 0)
+    pie_chart = GuiUtils.create_pie_chart(statistics_frame, gc.get('PIE_CHART_BY_CATEGORY', 'NAME'), 0, 0)
     
     # Place bar charts
-    bar_chart_canvas = GuiUtils.create_bar_charts(canvas, 1, 0, ec.sections())
+    bar_chart_canvas = GuiUtils.create_bar_charts(statistics_frame, 1, 0, ec.sections())
 
-    chart_data = pd.DataFrame({"x_label" : ['1'], "y_label": [72]})
-    chart_data.plot(kind='bar', ax=bar_chart_canvas.figure.axes[0], color=gc.get('BAR_CHARTS', 'BARS_COLOR'))
+    # Parse the carnivore buy history
+    print(Statistics.Carnivore.calculate_total_cost_by_month(config_obj.carnivore_payment_history))
+    print(Statistics.Carnivore.calculate_average_spent_per_month(config_obj.carnivore_payment_history))
+
+    canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+    canvas.create_window((0, 0), window=statistics_frame, anchor='nw')
     #-------------------------------------------------------------------------
 
     root.mainloop()
